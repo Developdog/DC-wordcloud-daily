@@ -1,0 +1,10 @@
+<p><span style="font-family: Arial, sans-serif; font-size: 14pt;">전날 [gallid] 단어 사용 분포도</span></p><span style="font-family: Arial, sans-serif;">
+</span><p></p><p></p><span style="font-family: Arial, sans-serif;">
+</span><p><span style="font-family: Arial, sans-serif; font-size: 10pt;">※ 단어가 클수록 빈도가 높습니다</span></p><span style="font-family: Arial, sans-serif;">
+</span><p><br></p><span style="font-family: Arial, sans-serif;">
+</span><p><span style="font-family: Arial, sans-serif; font-size: 14pt;"><span style="font-family: Arial, sans-serif;">오늘의 핵심 키워드: </span><b><span style="font-family: Arial, sans-serif;"> [hotkey1] , [hotkey2] , [hotkey3] , [hotkey4] , [hotkey5] </span></b></span></p>
+<p><span style="font-family: Arial, sans-serif; font-size: 8pt; color: rgb(116, 116, 116);"> tip. 어제부터 지금까지 총 [count] 개의 글이 작성되었습니다.<br>워드클라우드는 이 제목들에서 추출한 [word_count] 개의 단어로 구성되어 있습니다.<br>일부 단어들은 제외되었습니다. </span></p><span style="font-family: Arial, sans-serif; font-size: 8pt; color: rgb(116, 116, 116);">
+</span><p><br></p><span style="font-family: Arial, sans-serif;">
+</span><p><br></p><span style="font-family: Arial, sans-serif;">
+</span><p style="text-align: right;"><span style="font-family: Arial, sans-serif; font-size: 9pt; color: rgb(116, 116, 116);"> 본 게시글은 자동 작성되었습니다 </span></p>
+<p style="text-align: right;"><span style="font-family: Arial, sans-serif; font-size: 9pt; color: rgb(116, 116, 116);"><a href="https://pastebin.com/fxm3CkKq">제외 단어 보기</span></p>
