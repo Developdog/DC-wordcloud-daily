@@ -26,6 +26,11 @@ def midReturn(val, s, e):
     return val
 # string val의 s와 e 사이의 값을 잘라내서 반환시킵니다.
 
+def color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+    return("hsl({:d},{:d}%, {:d}%)".format(np.random.randint(25,52),np.random.randint(81,87),np.random.randint(63,88)))
+# 워드클라우드 색변경 함수입니다.
+
+
 agent = 'Mozilla/5.0 (Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
 headers = {'User-Agent': agent}
 # user agent 값 입력
@@ -40,7 +45,7 @@ stopwords.update(r.split('\r\n'))
 fontpath='NanumGothic.otf'
 # 폰트 입력
 
-gid = ''
+#gid = ''
 # 갤러리ID (수정 필요)
 
 link = 'https://gall.dcinside.com/board/lists/?id=' + gid
@@ -53,7 +58,7 @@ reupload_num = 0
 # check는 갤러리에서 자체적으로 재업로드 하는 과거글을 배제하기 위해 사용한다. check 개수와 같으면 갱신을 종료한다.
 
 drange = 1
-# 탐색 날짜 범위 (ex. days=1 : 1일 이내, 0:측정 시작순간 이후)
+# 탐색 날짜 범위 (ex. days=1 : 측정 날짜부터 1일 이내, 0:측정 날짜만)
 # 설정 날짜의 딱 자정으로 설정됩니다 (ex. 8.18 1:45AM -> 8.18 00:00AM)
 
 client_id = ''
@@ -73,6 +78,7 @@ minor = 0
 
 taskdone = False
 trial = 0
+trialend = 15
 # 여기서 트릴은 작업이 실패한 횟수를 뜻합니다. 아래 내용에서는 하나의 작업이 5번 이상 실패하면 실행이 자동 종료되게 만들었습니다.
 
 count = 0
@@ -83,6 +89,16 @@ r = requests.get('https://gall.dcinside.com/board/lists/?id=' + gid, headers = h
 print('갤러리 형식: ')
 #마이너, 정식갤러리 판별
 
+contents = []
+# 전날 받아온 단어 배열
+newword = []
+# 새로 등장한 키워드 상위 5개
+rank = []
+# 상위 5개 단어 순위 값
+rank_c = []
+# 랭크 색깔 값
+filename = "yesterday_order.txt"
+# 전날 단어 기록장
 
 if 'location.replace' in r:
     link = link.replace('board/','mgallery/board/')    
@@ -103,7 +119,7 @@ for p in posts:
 print(gallname)
 # 갤러리 이름 가져오기
 
-while not taskdone and trial < 5:
+while not taskdone and trial < trialend:
     try:
         ystday = (datetime.now() - timedelta(days=drange)).replace(hour=0, minute=0, second=0, microsecond=0)
         # 하루 전 날 구하기
@@ -172,57 +188,125 @@ while not taskdone and trial < 5:
                     print('게시글 크롤링 실패. 15초 후 다시 시도해 봅니다.')
                     i -= 1
                     time.sleep(15)
-                         
 
-        print()
-        print('워드클라우드 생성 중... [1/2]')
-
-        icon = Image.open("cover.jpg").convert("RGBA")
-        # 마스크가 될 이미지 불러오기
-
-        mask = Image.new("RGBA", icon.size, (255, 255, 255, 1))
-        x, y = icon.size
-        mask.paste(icon, (0, 0, x, y), icon)
-        mask = np.array(mask)
-        # 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
-
-        wc_title = WordCloud(font_path=fontpath, background_color='white', collocations=False, stopwords=stopwords, mask=mask).generate(tdata)
-        # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
-
-        print('이미지 저장 중...')
-        wc_title.to_file('title.png')
-        #이미지를 해당 파일로 생성합니다.
-
-        hotkey = sorted(wc_title.words_.items(), key=(lambda x: x[1]), reverse = True)
-
-        print('오늘의 핵심 키워드:')
-
-        print(hotkey[0][0])
-        print(hotkey[1][0])
-        print(hotkey[2][0])
-        print(hotkey[3][0])
-        print(hotkey[4][0])
-        # wc_title.words_.items()는 딕셔너리의 값을 키 값, 쌍의 형태로 반환합니다.
-        # 이후 키 값 중, 값을 기준으로 내림차순으로 정렬하는 형태로 가장 많이 등장한 단어 순으로 정렬합니다.
-        # 이후 이 값의 첫번째 값부터 다섯번쨰 값 까지 반환합니다.
-
-        print('저장 완료')
         taskdone = True
-        # 작업 완료 값을 넣어줍니다.
-        
+
     except Exception as e:
-        print('뭔가 문제가 있습니다. 다시 해보겠습니다.')
+        print('문제가 있습니다. 곧 해당 명령을 재시작합니다.')
         print('오류 메시지:', str(e))
         print('시도 횟수:', str(trial))
         trial += 1
         time.sleep(5)
-    # 예외 메세지 입력 후 다시 시도합니다.ㅣ
+        continue
+        # 예외 메세지 입력 후 다시 시도합니다.
+
+    print()
+    print('워드클라우드 생성 중... [1/2]')
+
+    icon = Image.open("cover.jpg").convert("RGBA")
+    # 마스크가 될 이미지 불러오기
+
+    mask = Image.new("RGBA", icon.size, (255, 255, 255, 1))
+    x, y = icon.size
+    mask.paste(icon, (0, 0, x, y), icon)
+    mask = np.array(mask)
+    # 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
+
+    #wc_title = WordCloud(font_path=fontpath, background_color='white', collocations=False, stopwords=stopwords, mask=mask).generate(tdata)
+    wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, stopwords=stopwords,
+                         mask=mask, color_func= color_func).generate(tdata)
+    # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
+    # 현재 임의로 색 변경을 한 값입니다.
+
+    print('이미지 저장 중...')
+    wc_title.to_file('title.png')
+    #이미지를 해당 파일로 생성합니다.
+
+    hotkey = sorted(wc_title.words_.items(), key=(lambda x: x[1]), reverse = True)
+
+    if os.path.exists(filename):
+        print('파일이 존재합니다.')
+        with open(filename, 'r', encoding="utf-8") as file:
+            for line in file:
+                contents.append(line.strip())
+            # 메모장에서 전날 단어 기록 읽어오기
+
+            if contents[0] < datetime.now().strftime("%Y-%m-%d"):
+                f = open(filename, 'w', encoding="utf-8")
+                f.write(datetime.now().strftime("%Y-%m-%d"))
+                f.write("\n")
+                for i in range(0, len(hotkey)) :
+                    f.write(hotkey[i][0] + "\n")
+                    
+                # 만약 메모장에 적힌 날짜가 지금 시간보다 작다면
+                # 메모장을 금일 단어로 새롭게 갱신합니다.
+
+                f.close()
+
+            for num in range(0, 5):
+                try:
+                    index = contents.index(hotkey[num][0]) - 1
+                    index = index - num
+                    index_s = ''
+                    if index > 0 :
+                            rank_c.append("red")
+                            index_s = str(index) + "▲"
+                    elif index  < 0:
+                            rank_c.append("blue")
+                            index_s = str(abs(index)) + "▼"
+                    elif index  == 0:
+                            rank_c.append("black")
+                            index_s = "-"
+
+                    # 전날 키워드 리스트 위치에서 오늘날 키워드 위치를 빼서 순위 변동 사항을 확인합니다.
+
+                    rank.append(index_s)
+                except ValueError:
+                    rank.append("NEW")
+                    rank_c.append("orange")
+
+            # 가장 상위 단어 5개 순위를 출력합니다.
+
+            for num in range(1, len(hotkey)):
+                if hotkey[num][0] not in contents:
+                    newword.append(hotkey[num][0])
+                if len(newword) == 5:
+                    break
+
+            # 전날 없었던 새로운 단어 상위 5개 출력합니다.
+
+    else:
+        print("파일이 존재하지 않습니다.")
+        f = open(filename, 'w', encoding="utf-8")
+        f.write(datetime.now().strftime("%Y-%m-%d"))
+        f.write("\n")
+        for i in range(0, len(hotkey)):
+            f.write(hotkey[i][0] + "\n")
+
+        f.close()
+
+        for i in range(0, 5) :
+            rank.append("NEW")
+            rank_c.append("orange")
+
+    # wc_title.words_.items()는 딕셔너리의 값을 키 값, 쌍의 형태로 반환합니다.
+    # 이후 키 값 중, 값을 기준으로 내림차순으로 정렬하는 형태로 가장 많이 등장한 단어 순으로 정렬합니다.
+    # 이후 이 값의 첫번째 값부터 다섯번쨰 값 까지 반환합니다.
+
+    if len(newword) < 5:
+        for num in range(0, 5 - len(hotkey)):
+            newword.append("X")
+    # 새 단어가 없을 경우 "X"값을 추가
+
+    print('\n저장 완료')
+    # 작업 완료 값을 넣어줍니다.
+
 
 if taskdone == True:
     taskdone = False
     trial = 0
 
-    while not taskdone and trial < 5:
+    while not taskdone and trial < trialend:
         
         try:
             #이미지 업로드 (해당 코드 사용하면 모바일 유저는 확인 불가능)
@@ -253,28 +337,45 @@ if taskdone == True:
             # HTTP 응답의 JSON 데이터에서 'data' 객체의 'link' 값을 추출하여 t_img 변수에 저장하는 역할을 합니다.
             """
 
-            page_source = open('orgpage.txt', 'r', encoding='UTF8').read()
+            page_source = open('orgpage.txt', 'r', encoding='utf-8').read()
             page_source = page_source.replace('[gallid]', gallname)
             #page_source = page_source.replace('[title_image]', t_img)
             # 이미지 사용 안함.
-            page_source = page_source.replace('[hotkey1]', hotkey[0][0])
-            page_source = page_source.replace('[hotkey2]', hotkey[1][0])
-            page_source = page_source.replace('[hotkey3]', hotkey[2][0])
-            page_source = page_source.replace('[hotkey4]', hotkey[3][0])
-            page_source = page_source.replace('[hotkey5]', hotkey[4][0])
+
+            print('\n오늘의 핵심 키워드:')
+
+            for i in range(0, 5) :
+                page_source = page_source.replace('[hotkey' + str(i+1) + ']', hotkey[i][0])
+                print(hotkey[i][0])
+
+            print('\n오늘의 순위 변동:')
+
+            for i in range(0, 5):
+                page_source = page_source.replace('[rank' + str(i+1) + ']', rank[i])
+                page_source = page_source.replace('[rank' + str(i+1) + 'c]', rank_c[i])
+                print(rank[i])
+                print(rank_c[i])
+
+            print('\n새로운 키워드 목록')
+
+            for i in range(0, len(newword)):
+                page_source = page_source.replace('[newword' + str(i+1) +']', newword[i])
+                print(newword[i] + " " + str(i))
+
             page_source = page_source.replace('[count]', str(count))
             page_source = page_source.replace('[word_count]', str(len(hotkey)))
 
-            open('page.txt', 'w').write(page_source)
+            open('page.txt', 'w', encoding='utf-8').write(page_source)
             
             # 기존에 기록되어 있던 게시글 값을 받아와 오늘 올릴 게시글을 위해 값을 변경한 텍스트 문서를 만듭니다.
 
             taskdone = True
             print('작업이 모두 성공하였습니다.')
+            print()
   
         except Exception as e:
             taskdone = False
-            print('뭔가 문제가 있습니다. 다시 해보겠습니다.')
+            print('문제가 있습니다. 곧 해당 명령을 재시작합니다.')
             print('오류 메시지:', str(e))
             print('시도 횟수:', str(trial))
             trial += 1
@@ -301,7 +402,7 @@ if taskdone:
     else :
         gall = 'https://gall.dcinside.com/board/write/?id=' + gid
     title = str(ystday.month) + '월 ' + str(ystday.day) + '일 ' + gallname + ' 워드클라우드'
-    content = open('page.txt', 'r').read()
+    content = open('page.txt', 'r', encoding="utf8").read()
 
     """
     # 리눅스를 위한 가상 디스플레이 드라이버 로드 
@@ -351,6 +452,7 @@ if taskdone:
     #접속되었는지 닉네임 확인
     name = driver.find_element(By.XPATH, '//*[@id="login_box"]/div[1]/div[1]/div[1]/a/strong')
     print(name.text)
+    driver.implicitly_wait(10)
 
     # 글을 쓰고자 하는 갤러리로 이동
     print('갤러리 글쓰기 페이지 접속...')
