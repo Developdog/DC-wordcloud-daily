@@ -250,10 +250,10 @@ while not taskdone and trial < trialend:
                     index_s = ''
                     if index > 0 :
                             rank_c.append("red")
-                            index_s = str(index) + "▲"
+                            index_s = "△" + str(index)
                     elif index  < 0:
                             rank_c.append("blue")
-                            index_s = str(abs(index)) + "▼"
+                            index_s = "▽" + str(abs(index))
                     elif index  == 0:
                             rank_c.append("black")
                             index_s = "-"
