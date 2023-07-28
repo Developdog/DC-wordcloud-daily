@@ -1,3 +1,5 @@
+import shutil
+# 파일 복사 붙여넣기를 위한 라이브러리
 import matplotlib.pyplot as plt
 # 파이썬 데이터 시각화를 위한 라이브러리
 from bs4 import BeautifulSoup
@@ -8,7 +10,7 @@ import requests, lxml, os, time, json
 # os는 운영 체제와 상호 작용하는 함수를 제공하는 라이브러리
 # time은 시간 제공 라이브러리
 # json은 json 데이터 형식을 다루는 라이브러리
-from wordcloud import WordCloud, STOPWORDS
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 # 단어 구름 사용 라이브러리
 from base64 import b64encode
 # base64는 데이터를 Base64 형식으로 인코딩 및 디코딩하는 함수를 제공하는 라이브러리입니다.
@@ -18,6 +20,9 @@ from PIL import Image
 # 이미지 파일을 다루는 라이브러리
 import numpy as np
 # 다차원 배열 사용을 위한 라이브러리
+from scipy.ndimage import gaussian_gradient_magnitude
+# 워드클라우드 용
+from variable import *
 
 def midReturn(val, s, e):
     if s in val:
@@ -26,82 +31,14 @@ def midReturn(val, s, e):
     return val
 # string val의 s와 e 사이의 값을 잘라내서 반환시킵니다.
 
-def color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+"""
+ def color_func(word, font_size, position,orientation,random_state=None, **kwargs):
     return("hsl({:d},{:d}%, {:d}%)".format(np.random.randint(25,52),np.random.randint(81,87),np.random.randint(63,88)))
-# 워드클라우드 색변경 함수입니다.
-
-
-agent = 'Mozilla/5.0 (Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-headers = {'User-Agent': agent}
-# user agent 값 입력
-# https://www.whatismybrowser.com/detect/what-is-my-user-agent/ 해당 사이트에서 가져올 수 있음
-
-stopwords = set(STOPWORDS)
-link = 'https://pastebin.com/raw/fxm3CkKq' # 예시용
-r = requests.get(link, headers=headers).text
-stopwords.update(r.split('\r\n'))
-# PASTEBIN 사이트에서 raw 부분을 이용해 제외 키워드를 입력받는다.
-
-fontpath='NanumGothic.otf'
-# 폰트 입력
-
-#gid = ''
-# 갤러리ID (수정 필요)
-
-link = 'https://gall.dcinside.com/board/lists/?id=' + gid
-# 갤러리 링크
-
-# reupload = ['']
-reupload_check = 2
-reupload_num = 0
-# 만약 갤러리에서 옛날 글이라도 꾸준히 업로드 되는 글이 있을 경우, 해당 글만 날짜 계산에서 제외하기 위해 올린다.
-# check는 갤러리에서 자체적으로 재업로드 하는 과거글을 배제하기 위해 사용한다. check 개수와 같으면 갱신을 종료한다.
-
-drange = 1
-# 탐색 날짜 범위 (ex. days=1 : 측정 날짜부터 1일 이내, 0:측정 날짜만)
-# 설정 날짜의 딱 자정으로 설정됩니다 (ex. 8.18 1:45AM -> 8.18 00:00AM)
-
-client_id = ''
-# imgur id 값
-api_key = ''
-# imgur api키 값을 입력합니다.
-
-id = ''
-pw = ''
-# 디시인사이드 아이디 및 비밀번호 입력
-
-delaytime = 5
-# selenium 사용 시 기본 time 대기 시간
-
-minor = 0
-# 마이너 갤러리 = 0 정식 갤러리  = 1
-
-taskdone = False
-trial = 0
-trialend = 15
-# 여기서 트릴은 작업이 실패한 횟수를 뜻합니다. 아래 내용에서는 하나의 작업이 5번 이상 실패하면 실행이 자동 종료되게 만들었습니다.
-
-count = 0
-# 해당 날짜 범위 내에 작성된 글 개수를 기입합니다.
-
-r = requests.get('https://gall.dcinside.com/board/lists/?id=' + gid, headers = headers).text
-# 해당 갤러리 내용을 텍스트로 입력받는다.
-print('갤러리 형식: ')
-#마이너, 정식갤러리 판별
-
-contents = []
-# 전날 받아온 단어 배열
-newword = []
-# 새로 등장한 키워드 상위 5개
-rank = []
-# 상위 5개 단어 순위 값
-rank_c = []
-# 랭크 색깔 값
-filename = "yesterday_order.txt"
-# 전날 단어 기록장
+ # 워드클라우드 색변경 함수입니다. 임의의 색깔을 출력할 수 있습니다. 현재는 커버 이미지의 색깔을 가져와서 출력하기 때문에 사용하지 않습니다.
+"""
 
 if 'location.replace' in r:
-    link = link.replace('board/','mgallery/board/')    
+    link = link.replace('board/','mgallery/board/')
     print('마이너')
     minor = 0
 else:
@@ -121,13 +58,12 @@ print(gallname)
 
 while not taskdone and trial < trialend:
     try:
-        ystday = (datetime.now() - timedelta(days=drange)).replace(hour=0, minute=0, second=0, microsecond=0)
         # 하루 전 날 구하기
-        print(ystday, '이후의 게시글을 수집합니다.')
+        print(str(endday.strftime("%Y-%m-%d %H:%M:%S")) + ' ~ ' + str(startday.strftime("%Y-%m-%d %H:%M:%S")) +' 사이의 게시글을 수집합니다.')
 
         i = 0
         tdata = ''
-        ndata = ''
+        #ndata = ''
         fin = False
         r = None
         # 데이터 전부 비우기 및 초기 시작 상태 만들어주기
@@ -166,19 +102,20 @@ while not taskdone and trial < trialend:
                         print(title + '     ' + str(date))
                         # 제목을 출력합니다.
 
-                        # 초 단위까지는 안 가도록 합니다.
-                        # 만약 전날보다 날짜값이 클 경우 string에 넣어줍니다.
-                        if date >= ystday:
+                        # 만약 날짜 값이 찾는 날짜 사이에 있을 경우 tdata에 넣어줍니다.
+                        if date >= startday and date <= endday:
                             tdata += title + '\n' #제목 값
-                            ndata += nick.text.strip() + '\n' #닉네임 값
+                            #ndata += nick.text.strip() + '\n' #닉네임 값
                             count += 1
                             reupload_num = 0
+                        # 만약 날짜값이 종료 날짜보다 클 경우에는 그냥 넘어갑니다.
+                        elif date > endday :
+                            print('------- 날짜값이 죵료 날짜보다 큽니다. 대기중입니다. -------')
                         # 전날 날짜보다 날짜값이 작을 경우, 기관 초과를 입력한 다음, fin에 true를 넣어 종료시킨다.
                         elif reupload_num == reupload_check :
                             print('-----------해당 항목은 제외됩니다.-------------')
-                            print('기간 초과:', date)
+                            print('시작 날짜값보다 작습니다. 출력을 종료합니다. :', date)
                             fin = True
-                            date = ystday
                             break
                         else:
                             print('-----------해당 항목은 제외됩니다.-------------')
@@ -187,7 +124,7 @@ while not taskdone and trial < trialend:
                 if not titleok:
                     print('게시글 크롤링 실패. 15초 후 다시 시도해 봅니다.')
                     i -= 1
-                    time.sleep(15)
+                    time.sleep(5)
 
         taskdone = True
 
@@ -198,109 +135,132 @@ while not taskdone and trial < trialend:
         trial += 1
         time.sleep(5)
         continue
-        # 예외 메세지 입력 후 다시 시도합니다.
+        # 예외 메세지 출력 후 다시 시도합니다.
 
     print()
-    print('워드클라우드 생성 중... [1/2]')
 
-    icon = Image.open("cover.jpg").convert("RGBA")
-    # 마스크가 될 이미지 불러오기
+# ============================워드클라우드 생성============================
 
-    mask = Image.new("RGBA", icon.size, (255, 255, 255, 1))
-    x, y = icon.size
-    mask.paste(icon, (0, 0, x, y), icon)
-    mask = np.array(mask)
-    # 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
+print('워드클라우드 생성 중... [1/2]')
 
-    #wc_title = WordCloud(font_path=fontpath, background_color='white', collocations=False, stopwords=stopwords, mask=mask).generate(tdata)
-    wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, stopwords=stopwords,
-                         mask=mask, color_func= color_func).generate(tdata)
-    # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
-    # 현재 임의로 색 변경을 한 값입니다.
+icon = Image.open("cover.png").convert("RGBA")
+# 마스크가 될 이미지 불러오기
 
-    print('이미지 저장 중...')
-    wc_title.to_file('title.png')
-    #이미지를 해당 파일로 생성합니다.
+mask = Image.new("RGBA", icon.size, (255, 255, 255, 1))
+x, y = icon.size
+mask.paste(icon, (0, 0, x, y), icon)
+mask = np.array(mask)
+# 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
 
-    hotkey = sorted(wc_title.words_.items(), key=(lambda x: x[1]), reverse = True)
+#wc_title = WordCloud(font_path=fontpath, background_color='white', collocations=False, stopwords=stopwords, mask=mask).generate(tdata)
+wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, stopwords=stopwords, prefer_horizontal=1,
+                     mask=mask).generate(tdata)
+# 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
+# font_path 글꼴 기록, stopwords 글꼴 제거, prefer_horizontal 0은 수직, 1은 수평, 없앨 경우 랜덤
 
-    if os.path.exists(filename):
-        print('파일이 존재합니다.')
-        with open(filename, 'r', encoding="utf-8") as file:
-            for line in file:
-                contents.append(line.strip())
-            # 메모장에서 전날 단어 기록 읽어오기
+# 배경과 같은 색 입히기
+image_colors = ImageColorGenerator(mask)
+plt.imshow(wc_title.recolor(color_func=image_colors), interpolation="bilinear")
 
-            if contents[0] < datetime.now().strftime("%Y-%m-%d"):
-                f = open(filename, 'w', encoding="utf-8")
-                f.write(datetime.now().strftime("%Y-%m-%d"))
-                f.write("\n")
-                for i in range(0, len(hotkey)) :
-                    f.write(hotkey[i][0] + "\n")
-                    
-                # 만약 메모장에 적힌 날짜가 지금 시간보다 작다면
-                # 메모장을 금일 단어로 새롭게 갱신합니다.
+print('이미지 저장 중...')
+wc_title.to_file('title.png')
+#이미지를 해당 파일로 생성합니다.
 
-                f.close()
+hotkey = sorted(wc_title.words_.items(), key=(lambda x: x[1]), reverse = True)
 
-            for num in range(0, 5):
-                try:
-                    index = contents.index(hotkey[num][0]) - 1
-                    index = index - num
-                    index_s = ''
-                    if index > 0 :
-                            rank_c.append("red")
-                            index_s = "△" + str(index)
-                    elif index  < 0:
-                            rank_c.append("blue")
-                            index_s = "▽" + str(abs(index))
-                    elif index  == 0:
-                            rank_c.append("black")
-                            index_s = "-"
+try:
+    shutil.copy('./title.png', f'./lastorder/{startday_str} ~ {endday_str} title.png')
+except FileNotFoundError:
+    print("lastorder로 옮길 워드클라우드 파일이 존재하지 않습니다. 계속 진행합니다.")
 
-                    # 전날 키워드 리스트 위치에서 오늘날 키워드 위치를 빼서 순위 변동 사항을 확인합니다.
 
-                    rank.append(index_s)
-                except ValueError:
-                    rank.append("NEW")
-                    rank_c.append("orange")
+# ================ 단어 데이터 파일을 저장힙니다. =================
 
-            # 가장 상위 단어 5개 순위를 출력합니다.
+if os.path.exists(filename):
+    print('단어 데이터 파일이 존재합니다.')
+    with open(filename, 'r', encoding="utf-8") as file:
+        for line in file:
+            contents.append(line.strip())
 
-            for num in range(1, len(hotkey)):
-                if hotkey[num][0] not in contents:
-                    newword.append(hotkey[num][0])
-                if len(newword) == 5:
-                    break
+        # 메모장에서 죵료 날짜 단어를 읽어와 메모장의 날짜와 비교하고, 종료 날짜가 더 크면 메모장의 내용을 바굽니다.
+        if datetime.strptime(contents[0], '%Y-%m-%d') < endday :
+            print('단어 데이터 파일이 날짜가 종료 날짜보다 작습니다. 데이터 파일 갱신을 시작합니다.')
+            print('데이터 날짜 값 : ' + contents[0] + ' 종료 날짜 값' + str(endday))
 
-            # 전날 없었던 새로운 단어 상위 5개 출력합니다.
+            try:
+                shutil.copy(f'./{filename}', f'./lastorder/{startday_str} ~ {endday_str} {filename}')
+            except FileNotFoundError:
+                print("lastorder로 옮길 단어 데이터 파일이 존재하지 않습니다. 계속 진행합니다.")
 
-    else:
-        print("파일이 존재하지 않습니다.")
-        f = open(filename, 'w', encoding="utf-8")
-        f.write(datetime.now().strftime("%Y-%m-%d"))
-        f.write("\n")
-        for i in range(0, len(hotkey)):
-            f.write(hotkey[i][0] + "\n")
+            # 만약 메모장에 적힌 날짜가 지금 시간보다 작다면
+            # 메모장을 금일 단어로 새롭게 갱신합니다.
 
-        f.close()
+        # ============== 전날 단어 데이터 값과 금일 단어 데이터 값을 비교하여 순위를 매깁니다. =============
 
-        for i in range(0, 5) :
-            rank.append("NEW")
-            rank_c.append("orange")
+        for num in range(0, 5):
+            try:
+                index = contents.index(hotkey[num][0]) - 1
+                index = index - num
+                index_s = ''
+                if index > 0 :
+                        rank_c.append("red")
+                        index_s = "△" + str(index)
+                elif index  < 0:
+                        rank_c.append("blue")
+                        index_s = "▽" + str(abs(index))
+                elif index  == 0:
+                        rank_c.append("black")
+                        index_s = "-"
+                rank.append(index_s)
+            except ValueError:
+                rank.append("NEW")
+                rank_c.append("orange")
 
-    # wc_title.words_.items()는 딕셔너리의 값을 키 값, 쌍의 형태로 반환합니다.
-    # 이후 키 값 중, 값을 기준으로 내림차순으로 정렬하는 형태로 가장 많이 등장한 단어 순으로 정렬합니다.
-    # 이후 이 값의 첫번째 값부터 다섯번쨰 값 까지 반환합니다.
+            # 전날 키워드 리스트 위치에서 오늘날 키워드 위치를 빼서 순위 변동 사항을 확인합니다.
 
-    if len(newword) < 5:
-        for num in range(0, 5 - len(hotkey)):
-            newword.append("X")
-    # 새 단어가 없을 경우 "X"값을 추가
+        for num in range(1, len(hotkey)):
+            if hotkey[num][0] not in contents:
+                newword.append(hotkey[num][0])
+            if len(newword) == 5:
+                break
+            if num == len(hotkey)-1 :
+                for temp in range(0, 5 - len(newword)) :
+                    newword.append("-")
 
-    print('\n저장 완료')
-    # 작업 완료 값을 넣어줍니다.
+        # 가장 상위 단어 5개 순위를 출력합니다. 없을 경우에는 -를 출력합니다.
+        # 전날 없었던 새로운 단어 상위 5개 출력합니다.
 
+else:
+    print("단어 데이터 파일이 존재하지 않습니다.")
+
+    for i in range(0, 5) :
+        rank.append("NEW")
+        rank_c.append("orange")
+        newword.append("-")
+
+    # 단어 데이터 파일이 없을 경우에는 전부 NEW를 출력한다.
+
+f = open(filename, 'w', encoding="utf-8")
+f.write(endday.strftime("%Y-%m-%d"))
+f.write("\n")
+for i in range(0, len(hotkey)):
+    f.write(hotkey[i][0] + "\n")
+
+f.close()
+
+# wc_title.words_.items()는 딕셔너리의 값을 키 값, 쌍의 형태로 반환합니다.
+# 이후 키 값 중, 값을 기준으로 내림차순으로 정렬하는 형태로 가장 많이 등장한 단어 순으로 정렬합니다.
+# 이후 이 값의 첫번째 값부터 다섯번쨰 값 까지 반환합니다.
+
+if len(newword) < 5:
+    for num in range(0, 5 - len(hotkey)):
+        newword.append("X")
+# 새 단어가 없을 경우 "X"값을 추가
+
+print('\n저장 완료')
+# 작업 완료 값을 넣어줍니다.
+
+# ================ 게시글 전용 html 파일 출력 ================
 
 if taskdone == True:
     taskdone = False
@@ -309,7 +269,7 @@ if taskdone == True:
     while not taskdone and trial < trialend:
         
         try:
-            #이미지 업로드 (해당 코드 사용하면 모바일 유저는 확인 불가능)
+            #이미지 업로드 (해당 코드를 사용하면 모바일 유저가 워드클라우드 이미지 확인이 불가능하기 때문에 폐기)
             """
             headers = {"Authorization": "Client-ID " + client_id}
 
@@ -326,7 +286,7 @@ if taskdone == True:
                     'image': b64encode(open('title.png', 'rb').read()),
                     'type': 'base64',
                     'name': 'title.png',
-                    'title': gid + ' ' + str(ystday) + ' posts WC'
+                    'title': gid + ' ' + str(endday) + ' ~ ' + str(startday) + ' posts WC'
                 }
             )
             # imgur 해당 이미지 업로드를 요청합니다.
@@ -381,12 +341,17 @@ if taskdone == True:
             trial += 1
             time.sleep(5)
 
+        try:
+            shutil.copy('./page.txt', f'./lastorder/{startday_str} ~ {endday_str} page.txt')
+        except FileNotFoundError:
+            print("lastorder로 옮길 게시글 html 파일이 존재하지 않습니다. 계속 진행합니다.")
+
 print('업로드 스크립트 끝.')
 
 #============================글쓰기 시작============================
 
 if taskdone:
-    taskdone = False
+    import pyautogui
     from selenium import webdriver
     from selenium.webdriver.chrome.service import Service
     #from selenium_recaptcha_solver import RecaptchaSolver
@@ -401,7 +366,7 @@ if taskdone:
         gall = 'https://gall.dcinside.com/mgallery/board/write/?id=' + gid
     else :
         gall = 'https://gall.dcinside.com/board/write/?id=' + gid
-    title = str(ystday.month) + '월 ' + str(ystday.day) + '일 ' + gallname + ' 워드클라우드'
+    title = str(startday.month) + '월 ' + str(startday.day) + '일 ' + gallname + ' 워드클라우드'
     content = open('page.txt', 'r', encoding="utf8").read()
 
     """
@@ -425,11 +390,16 @@ if taskdone:
 
     #크롬 드라이버 로드
     print('chromedriver 로드...')
-    #웹드라이버 불러오기 - Windows의 경우 웹드라이버를 받은 후 같은 디렉토리에 넣는다.
-    service = Service('.\\chromedriver')
-    driver = webdriver.Chrome(service=service, options=options)
-    #driver = webdriver.Chrome('.\\chromedriver',options=options)
+    driver = webdriver.Chrome(service=Service())
+    # 시스템에 이미 설치된 기본 ChromeDriver를 사용합니다.
+
+
     #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    # 웹드라이버 불러오기 - Windows의 경우 웹드라이버를 받은 후 같은 디렉토리에 넣는다.
+    # 주의) 해당 기능을 사용하면 크롬드라이버 버전이 업데이트 될 때마다 재설치해야하는 부작용이 생깁니다.
+    #service = Service('.\\chromedriver')
+    #driver = webdriver.Chrome(service=service, options=options)
     # 아무런 경고가 없다면 이상 없이 작동되는 것입니다.
 
     # 디시인사이드 로그인 페이지 로드
@@ -491,45 +461,50 @@ if taskdone:
     driver.switch_to.frame(driver.find_element(By.XPATH, "//iframe[@name='tx_canvas_wysiwyg']"))
     time.sleep(delaytime)
 
+    # 사진에 방해되지 않게 줄을 처음으로 옮긴 후 다시 페이지 선택
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.CONTROL + Keys.HOME)
     driver.switch_to.default_content()
     time.sleep(delaytime)
-    # 사진에 방해되지 않게 줄을 처음으로 옮긴 후 다시 페이지 선택
 
+    # 사진 칸 클릭
     print('사진 첨부 중...')
     driver.find_element(By.XPATH, '//a[@title="사진"]').send_keys(Keys.ENTER)
     time.sleep(delaytime)
-    # 사진 칸 클릭
-    
+
+    # 사진 올리는 팝업창으로 이동
     main = driver.window_handles
     driver.switch_to.window(main[1])
     time.sleep(delaytime)
-    # 사진 올리는 팝업창으로 이동
 
+    # 현재 위치 경로 받아오기
     working_directory = os.getcwd()
-    #현재 위치 경로 받아오기
 
+    # 팝업창에서 사진 올리기 클릭 후 그 사진 선택
     uploader = driver.find_element(By.XPATH, '//input[@type="file"]')
     uploader.send_keys( working_directory + '\\title.png' )
     time.sleep(delaytime)
-    # 팝업창에서 사진 올리기 클릭 후 그 사진 선택
 
+    # 사진 업로드 후 다시 메인 페이지로 복귀
+    # 사진 올리는 예제 : https://uipath.tistory.com/197
     driver.find_element(By.XPATH, '//button[@class="btn_apply"]').send_keys(Keys.ENTER)
     time.sleep(delaytime)
     driver.switch_to.window(main[0])
+    driver.maximize_window()
     time.sleep(delaytime)
-    # 사진 업로드 후 다시 메인 페이지로 복귀
-    # 사진 올리는 예제 : https://uipath.tistory.com/197
 
     #글쓰기 저장
-
     print('저장 후 전송중...')
-    driver.execute_script("window.scrollTo(0, 1000)")
+    #driver.execute_script("window.scrollTo(0, 1000)")
+
+    # 해당 요소를 찾아 자동스크롤 및 마우스 이동, 글쓰기 클릭
+    element = driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]')
+    driver.execute_script("arguments[0].scrollIntoView();", element)
+    pyautogui.moveTo(xbutton, ybutton)
     time.sleep(delaytime)
-    driver.switch_to.default_content()
-    driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
+    pyautogui.leftClick()
+    #driver.switch_to.default_content()
+    #driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
     time.sleep(delaytime)
-    #저장 딜레이
 
     """
     try :
@@ -542,7 +517,6 @@ if taskdone:
     except :
         print("리캡차가 존재하지 않습니다.")
     # 리캡차 확인 (상위 버전의 리캡처면 작동 안될 가능성이 높음)
-    """
 
     try :
         result = driver.switch_to_alert()
@@ -554,9 +528,11 @@ if taskdone:
         driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
     except :
         print("경고창이 존재하지 않습니다.")
-    # 경고창 확인
+    # 경고창 확인(매크로 한번 탐지되면 계속 듬)
+    
+    """
 
-    #글 잘 썼는지 확인
+    #글 작성이 완료되었는지 확인하기 위해 목차로 되돌아감
     temper = driver.current_url
     print('마지막 페이지 : ' + temper)
 
