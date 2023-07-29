@@ -182,18 +182,18 @@ if os.path.exists(filename):
         for line in file:
             contents.append(line.strip())
 
+
+        """
         # 메모장에서 죵료 날짜 단어를 읽어와 메모장의 날짜와 비교하고, 종료 날짜가 더 크면 메모장의 내용을 바굽니다.
         if datetime.strptime(contents[0], '%Y-%m-%d') < endday :
             print('단어 데이터 파일이 날짜가 종료 날짜보다 작습니다. 데이터 파일 갱신을 시작합니다.')
             print('데이터 날짜 값 : ' + contents[0] + ' 종료 날짜 값' + str(endday))
 
-            try:
-                shutil.copy(f'./{filename}', f'./lastorder/{startday_str} ~ {endday_str} {filename}')
-            except FileNotFoundError:
-                print("lastorder로 옮길 단어 데이터 파일이 존재하지 않습니다. 계속 진행합니다.")
-
             # 만약 메모장에 적힌 날짜가 지금 시간보다 작다면
             # 메모장을 금일 단어로 새롭게 갱신합니다.
+            
+        # 중복 사용을 위해 배제했는데 단어 수가 적어 필요 이유가 X
+        """
 
         # ============== 전날 단어 데이터 값과 금일 단어 데이터 값을 비교하여 순위를 매깁니다. =============
 
@@ -245,8 +245,12 @@ f.write(endday.strftime("%Y-%m-%d"))
 f.write("\n")
 for i in range(0, len(hotkey)):
     f.write(hotkey[i][0] + "\n")
-
 f.close()
+
+try:
+    shutil.copy(f'./{filename}', f'./lastorder/{startday_str} ~ {endday_str} {filename}')
+except FileNotFoundError:
+    print("lastorder로 옮길 단어 데이터 파일이 존재하지 않습니다. 계속 진행합니다.")
 
 # wc_title.words_.items()는 딕셔너리의 값을 키 값, 쌍의 형태로 반환합니다.
 # 이후 키 값 중, 값을 기준으로 내림차순으로 정렬하는 형태로 가장 많이 등장한 단어 순으로 정렬합니다.
