@@ -7,12 +7,12 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
 # # ============================일반 변수============================
 
-gid =
+gid = ''
 # ex) gid = 'aoegame'
 # 갤러리ID
 
-id =
-pw =
+id = ''
+pw = ''
 # 디시인사이드 아이디 및 비밀번호 입력
 
 fontpath = 'font.otf'
@@ -39,23 +39,18 @@ startday_str = startday.strftime("%Y-%m-%d %H-%M-%S")
 endday_str = nowday.strftime("%Y-%m-%d %H-%M-%S")
 #파일명 입력을 위해 :를 제거한 값을 만들어줍니다.
 
-agent = 'Mozilla/5.0 (Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-headers = {'User-Agent': agent}
-# user agent 값을 입력합니다. 필요시 수정하시면 됩니다.
-# https://www.whatismybrowser.com/detect/what-is-my-user-agent/ 해당 사이트에서 자신의 agent 값을 가져올 수 있습니다.
-
 stopwords = set(STOPWORDS)
 link = 'https://pastebin.com/raw/fxm3CkKq' # 예시 메모장 링크입니다. 직접 만들어서 수정하셔도 됩니다.
-r = requests.get(link, headers=headers).text
+r = requests.get(link).text
 stopwords.update(r.split('\r\n'))
 # PASTEBIN 사이트에서 raw 부분을 이용해 워드클라우드 제외 키워드를 추가로 입력받습니다.
 
 link = 'https://gall.dcinside.com/board/lists/?id=' + gid
 # 갤러리 링크
 
-reupload_check = 3
+reupload_check = 10
 reupload_num = 0
-# 만약 갤러리에서 옛날 글이라도 꾸준히 업로드 되는 글이 있을 경우, 해당 글만 날짜 계산에서 제외하기 위해 올린다.
+# 만약 갤러리에서 상위로 재업로드 하는 글이 있을 경우, 해당 글만 날짜 계산에서 제외하기 위해 올린다.
 # check는 갤러리에서 자체적으로 재업로드 하는 과거글을 배제하기 위해 사용한다.
 # 종료 날짜 이후의 값이 있을 경우 num을 카운트하고, check 개수와 같으면 갱신을 종료한다.
 
@@ -69,9 +64,6 @@ api_key = ''
 delaytime = 5
 # selenium 사용 시 기본 time 대기 시간
 
-minor = 0
-# 마이너 갤러리 = 0 정식 갤러리  = 1
-
 taskdone = False
 trial = 0
 trialend = 15
@@ -80,8 +72,8 @@ trialend = 15
 count = 0
 # 해당 날짜 범위 내에 작성된 글 개수를 기입합니다.
 
-r = requests.get('https://gall.dcinside.com/board/lists/?id=' + gid, headers = headers).text
-print('갤러리 형식: ')
+r = requests.get('https://gall.dcinside.com/board/lists/?id=' + gid).text
+print(r)
 #마이너, 정식갤러리 판별
 
 contents = []

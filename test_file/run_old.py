@@ -22,96 +22,46 @@ import numpy as np
 # 다차원 배열 사용을 위한 라이브러리
 from scipy.ndimage import gaussian_gradient_magnitude
 # 워드클라우드 용
-import random
+import variable as va
 # 랜덤용
-from PIL import Image
-from io import BytesIO
-import win32clipboard
-# 복사 붙여넣기 용
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-# 단어 구름 사용 라이브러리
-import pyautogui
-# 마우스 이동 라이브러리
+import random
+import importlib
 
-# ============================일반 변수============================
+importlib.reload(va)
 
 minor = 0
 # 마이너 갤러리 = 0 정식 갤러리  = 1
 
-f = open('./variable.txt', 'r', encoding='utf-8')
-gid = f.readline().replace('\n', '')
-id = f.readline().replace('\n', '')
-pw = f.readline().replace('\n', '')
-f.close()
-# ex) gid = 'aoegame'
-# 갤러리 아이디, 디시인사이드 아이디, 비밀번호 순
-# 갤러리ID, 디시인사이드 아이디 및 비밀번호 입력
+gid = va.gid
+id = va.id
+pw = va.pw
+fontpath = va.fontpath
+endday = va.endday
+startday = va.startday
+endday_str = va.endday_str
+startday_str = va.startday_str
 
-fontpath = 'font.otf'
-# 폰트 입력
+headers = va.headers
+stopwords = va.stopwords
 
-drange = 1
-# 탐색 날짜 범위를 지정합니다.
-# (ex. drange가 1이고, enddate의 값이 2023-07-28일 경우, 2023-07-28 00:00 부터 2023-07-27 00:00 까지의 게시글 값을 가져옵니다.)
+link = va.link
 
-nowday = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-# 종료날짜와 시작날짜를 활용하기 위해 오늘 날짜를 구해줍니다.
+reupload_check = va.reupload_check
+reupload_num = va.reupload_num
 
-endday = nowday
-# 종료 날짜는 오늘을 기준으로 합니다. 임의로 변경 가능합니다.
+delaytime = va.delaytime
 
-startday = (nowday - timedelta(days=drange))
-# 시작 날짜는 종료 날짜에서 drange일 만큼 뺀 값을 기준으로 합니다. 임의로 변경 가능합니다.
+taskdone = va.taskdone
+trial = va.trial
+trialend = va.trialend
+count = va.count
 
-startday_str = startday.strftime("%Y-%m-%d %H-%M-%S")
-endday_str = nowday.strftime("%Y-%m-%d %H-%M-%S")
-#파일명 입력을 위해 :를 제거한 값을 만들어줍니다.
-
-stopwords = set(STOPWORDS)
-link = 'https://pastebin.com/raw/fxm3CkKq' # 예시 메모장 링크입니다. 직접 만들어서 수정하셔도 됩니다.
-r = requests.get(link).text
-stopwords.update(r.split('\r\n'))
-# PASTEBIN 사이트에서 raw 부분을 이용해 워드클라우드 제외 키워드를 추가로 입력받습니다.
-
-link = 'https://gall.dcinside.com/board/lists/?id=' + gid
-# 갤러리 링크
-
-reupload_check = 5
-reupload_num = 0
-# 만약 갤러리에서 상위로 재업로드 하는 글이 있을 경우, 해당 글만 날짜 계산에서 제외하기 위해 올린다.
-# check는 갤러리에서 자체적으로 재업로드 하는 과거글을 배제하기 위해 사용한다.
-# 종료 날짜 이후의 값이 있을 경우 num을 카운트하고, check 개수와 같으면 갱신을 종료한다.
-
-delaytime = 5
-# selenium 사용 시 기본 time 대기 시간
-
-taskdone = False
-trial = 0
-trialend = 10
-# 작업이 실패한 횟수 설정, 작업 횟수(trial)가 trialend번 실패하면 종료.
-
-count = 0
-# 해당 날짜 범위 내에 작성된 글 개수를 기입합니다.
-
-contents = []
-# 전날 단어 데이터 배열
-newword = []
-# 새 키워드 상위 5개
-rank = []
-# 상위 5개 단어 순위 값
-rank_c = []
-# 상위 단어 등수 색깔 값
-filename = "last_order.txt"
-# 전날 단어 기록장
-
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/115.0.0.0 Safari/537.36"
-}
-# 해더 설정
-
-# ============================일반 변수 완료료============================
+r = va.r
+contents = va.contents
+newword = va.newword
+rank = va.rank
+rank_c = va.rank_c
+filename = va.filename
 
 def midReturn(val, s, e):
     if s in val:
@@ -120,8 +70,14 @@ def midReturn(val, s, e):
     return val
 # string val의 s와 e 사이의 값을 잘라내서 반환시킵니다.
 
-print('갤러리 형식: ', end='')
-r = requests.get(link, headers=headers).text
+"""
+ def color_func(word, font_size, position,orientation,random_state=None, **kwargs):
+    return("hsl({:d},{:d}%, {:d}%)".format(np.random.randint(25,52),np.random.randint(81,87),np.random.randint(63,88)))
+ # 워드클라우드 색변경 함수입니다. 임의의 색깔을 출력할 수 있습니다. 현재는 커버 이미지의 색깔을 가져와서 출력하기 때문에 사용하지 않습니다.
+"""
+
+print('갤러리 형식: ')
+
 if 'location.replace' in r:
     link = link.replace('board/','mgallery/board/')
     print('마이너')
@@ -129,9 +85,9 @@ if 'location.replace' in r:
 else:
     print('정식')
     minor = 1
-# 마이너 갤러리일 경우 (r의 내용의 값을 받지 못했다면 호출용 함수 location.replace가 그대로 text에 기록된다.)
+#마이너 갤러리일 경우 (r의 내용의 값을 받지 못했다면 호출용 함수 location.replace가 그대로 text에 기록된다.)
 
-print("갤러리 이름 : ", end='')
+print("갤러리 이름 : ")
 gallname = ''
 r = requests.get(link, headers=headers).text
 bs = BeautifulSoup(r, 'lxml')
@@ -139,7 +95,7 @@ posts = bs.find_all('div', class_='page_head clear')
 for p in posts:
     gallname = midReturn(str(p.find('a')), "\">", "<div")
 print(gallname)
-# 갤러리 이름(한글) 가져오기
+# 갤러리 이름 가져오기
 
 while not taskdone and trial < trialend:
     try:
@@ -148,6 +104,7 @@ while not taskdone and trial < trialend:
 
         i = 0
         tdata = ''
+        #ndata = ''
         fin = False
         r = None
         # 데이터 전부 비우기 및 초기 시작 상태 만들어주기
@@ -161,7 +118,7 @@ while not taskdone and trial < trialend:
             # 페이지를 1 부터 읽어옵니다.
 
             while not titleok:
-                r = requests.get(link + '&page=' + str(i), headers=headers).text
+                r = requests.get(link + '&page=' + str(i), headers = headers).text
                 bs = BeautifulSoup(r, 'lxml')
                 # requests를 통해 받은 텍스트를 lxml를 통해 HTML 형식으로 변경한다.i
                 
@@ -236,6 +193,7 @@ mask.paste(icon, (0, 0, x, y), icon)
 mask = np.array(mask)
 # 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
 
+#wc_title = WordCloud(font_path=fontpath, background_color='white', collocations=False, stopwords=stopwords, mask=mask).generate(tdata)
 wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, stopwords=stopwords, prefer_horizontal=1,
                      mask=mask).generate(tdata)
 # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
@@ -264,6 +222,19 @@ if os.path.exists(filename):
     with open(filename, 'r', encoding="utf-8") as file:
         for line in file:
             contents.append(line.strip())
+
+
+        """
+        # 메모장에서 죵료 날짜 단어를 읽어와 메모장의 날짜와 비교하고, 종료 날짜가 더 크면 메모장의 내용을 바굽니다.
+        if datetime.strptime(contents[0], '%Y-%m-%d') < endday :
+            print('단어 데이터 파일이 날짜가 종료 날짜보다 작습니다. 데이터 파일 갱신을 시작합니다.')
+            print('데이터 날짜 값 : ' + contents[0] + ' 종료 날짜 값' + str(endday))
+
+            # 만약 메모장에 적힌 날짜가 지금 시간보다 작다면
+            # 메모장을 금일 단어로 새롭게 갱신합니다.
+            
+        # 중복 사용을 위해 배제했는데 단어 수가 적어 필요 이유가 X
+        """
 
         # ============== 전날 단어 데이터 값과 금일 단어 데이터 값을 비교하여 순위를 매깁니다. =============
 
@@ -297,8 +268,8 @@ if os.path.exists(filename):
                 for temp in range(0, 5 - len(newword)) :
                     newword.append("-")
 
-        # 상위 단어 5개 순위를 출력합니다. 없을 경우에는 -를 출력합니다.
-        # 전날 없었던 새로운 단어 상위 5개를 출력합니다.
+        # 가장 상위 단어 5개 순위를 출력합니다. 없을 경우에는 -를 출력합니다.
+        # 전날 없었던 새로운 단어 상위 5개 출력합니다.
 
 else:
     print("단어 데이터 파일이 존재하지 않습니다.")
@@ -331,7 +302,8 @@ if len(newword) < 5:
         newword.append("X")
 # 새 단어가 없을 경우 "X"값을 추가
 
-print("단어 파일 생성 완료")
+print('\n저장 완료')
+# 작업 완료 값을 넣어줍니다.
 
 # ================ 게시글 전용 html 파일 출력 ================
 
@@ -342,8 +314,38 @@ if taskdone == True:
     while not taskdone and trial < trialend:
         
         try:
+            #이미지 업로드 (해당 코드를 사용하면 모바일 유저가 워드클라우드 이미지 확인이 불가능하기 때문에 폐기)
+            """
+            headers = {"Authorization": "Client-ID " + client_id}
+
+            url = "https://api.imgur.com/3/upload.json"
+            t_img = ''
+            # 만들어진 이미지 정보를 입력합니다.
+
+            print('이미지 업로드 중...')
+            r = requests.post(
+                url, 
+                headers = headers,
+                data = {
+                    'key': api_key, 
+                    'image': b64encode(open('title.png', 'rb').read()),
+                    'type': 'base64',
+                    'name': 'title.png',
+                    'title': gid + ' ' + str(endday) + ' ~ ' + str(startday) + ' posts WC'
+                }
+            )
+            # imgur 해당 이미지 업로드를 요청합니다.
+            # https://stackoverflow.com/questions/16244183/uploading-a-file-to-imgur-via-python
+
+            t_img = json.loads(r.text)['data']['link']
+            # JSON.loads는 r의 JSON 형식 데이터를 파이썬 객체로 변환하는 함수입니다.
+            # HTTP 응답의 JSON 데이터에서 'data' 객체의 'link' 값을 추출하여 t_img 변수에 저장하는 역할을 합니다.
+            """
+
             page_source = open('orgpage.txt', 'r', encoding='utf-8').read()
             page_source = page_source.replace('[gallid]', gallname)
+            #page_source = page_source.replace('[title_image]', t_img)
+            # 이미지 사용 안함.
 
             print('\n오늘의 핵심 키워드:')
 
@@ -373,12 +375,12 @@ if taskdone == True:
             # 기존에 기록되어 있던 게시글 값을 받아와 오늘 올릴 게시글을 위해 값을 변경한 텍스트 문서를 만듭니다.
 
             taskdone = True
-            print('html 양식 생성 완료.')
+            print('작업이 모두 성공하였습니다.')
             print()
   
         except Exception as e:
             taskdone = False
-            print('html 생성 실패, 재시작 중...')
+            print('문제가 있습니다. 곧 해당 명령을 재시작합니다.')
             print('오류 메시지:', str(e))
             print('시도 횟수:', str(trial))
             trial += 1
@@ -394,123 +396,222 @@ print('업로드 스크립트 끝.')
 #============================글쓰기 시작============================
 
 if taskdone:
-    while True :
-        try :
-            from selenium import webdriver
-            from selenium.webdriver.common.by import By
-            from selenium.webdriver.chrome.options import Options
+    #import pyautogui
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    #from selenium_recaptcha_solver import RecaptchaSolver
+    from webdriver_manager.chrome import ChromeDriverManager
+    from webdriver_manager.core.os_manager import ChromeType
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.chrome.options import Options
+    from pyvirtualdisplay import Display
+    import pyautogui
 
-            # 디시인사이드 자료
-            url = 'https://www.dcinside.com/'
-            if minor == 0 :
-                gall = 'https://gall.dcinside.com/mgallery/board/write/?id=' + gid
-            else :
-                gall = 'https://gall.dcinside.com/board/write/?id=' + gid
-            title = str(startday.month) + '월 ' + str(startday.day) + '일 ' + gallname + ' 땃지 키워드'
+    # 디시인사이드 자료
+    url = 'https://www.dcinside.com/'
+    if minor == 0 :
+        gall = 'https://gall.dcinside.com/mgallery/board/write/?id=' + gid
+    else :
+        gall = 'https://gall.dcinside.com/board/write/?id=' + gid
+    title = str(startday.month) + '월 ' + str(startday.day) + '일 ' + gallname + ' 땃지 키워드'
 
-            content = []
-            file = open('page.txt', 'r', encoding="utf8")
-            content = file.readlines()
-            file.close()
+    content = []
+    file = open('page.txt', 'r', encoding="utf8")
+    content = file.readlines()
 
-            #크롬 드라이버 로드
-            print('chromedriver 로드...')
-            options = Options()
-            options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_argument("--disable-blink-features=AutomationControlled")
-            options.add_experimental_option('useAutomationExtension', False)
-            # 매크로 회피용
+    """
+    # 리눅스를 위한 가상 디스플레이 드라이버 로드 
+    display = Display(visible=0, size=(1920, 1080))  
+    display.start()
+    print('디스플레이 드라이버 로드...')
+    """
 
-            driver = webdriver.Chrome(options=options)
-            # 시스템에 이미 설치된 기본 ChromeDriver를 사용.
+    # 크롬 환경 변수
+    print('환경 변수 설정...')
+    #options = webdriver.ChromeOptions()
+    #options.add_argument('--disable-gpu')
+    #options.add_argument('--headless')
+    #options.add_argument('--no-sandbox')
+    #options.add_argument('--disable-dev-shm-usage')
+    #options.add_argument('--window-size=1920x1080')
+    #options.add_argument("--lang=ko_KR")
+    #options.add_argument("--user-agent=" + agent)
+    #print("User-agent 정보 : " + agent)
 
-            # 디시인사이드 로그인 페이지 로드
-            print('dcinside 로그인 작업 중...')
-            driver.get(url)
-            driver.maximize_window()
+    #크롬 드라이버 로드
+    print('chromedriver 로드...')
+    #driver = webdriver.Chrome()
+    service = Service("/usr/bin/chromedriver")
+    options = Options()
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option('useAutomationExtension', False)
+    # 전부 회피용
 
-            # 아이디
-            driver.find_element(By.NAME, 'user_id').send_keys(id)
-            driver.find_element(By.NAME, 'pw').send_keys(pw)
-            driver.find_element(By.ID, 'login_ok').click()
-            time.sleep(delaytime)
+    driver = webdriver.Chrome(service=service, options=options)
+    # 시스템에 이미 설치된 기본 ChromeDriver를 사용합니다.
 
-            # 글을 쓰고자 하는 갤러리로 이동
-            print('갤러리 글쓰기 페이지 접속...')
-            driver.get(gall)
-            time.sleep(delaytime)
 
-            # 제목 입력
-            print('글 제목 입력중...')
-            driver.find_element(By.XPATH, '//*[@id="subject"]').send_keys(title)
-            pyautogui.moveTo(100, 200)
+    #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-            # 이미지 복사하기
-            print('이미지 복사 중...')
-            image = Image.open("C:\\Users\\user\\Desktop\\Python\\DC-wordcloud-daily\\title.png")
-            
-            # 이미지 데이터를 BMP 형식으로 변환
-            output = BytesIO()
-            image.convert("RGB").save(output, "BMP")
-            bmp_data = output.getvalue()[14:]  # BMP 헤더 제거
-            output.close()
+    # 웹드라이버 불러오기 - Windows의 경우 웹드라이버를 받은 후 같은 디렉토리에 넣는다.
+    # 주의) 해당 기능을 사용하면 크롬드라이버 버전이 업데이트 될 때마다 재설치해야하는 부작용이 생깁니다.
+    #service = Service('.\\chromedriver')
+    #driver = webdriver.Chrome(service=service, options=options)
+    # 아무런 경고가 없다면 이상 없이 작동되는 것입니다.
 
-            # 클립보드에 이미지 복사
-            win32clipboard.OpenClipboard()
-            win32clipboard.EmptyClipboard()
-            win32clipboard.SetClipboardData(win32clipboard.CF_DIB, bmp_data)
-            win32clipboard.CloseClipboard()
-            print('이미지 복사 완료...')
+    # 디시인사이드 로그인 페이지 로드
+    print('dcinside 로그인 작업 중...')
+    driver.get(url)
+    driver.maximize_window()
 
-            # 글쓰기 창 선택 (말머리 유무 확인 //*[@id="write"]/div[4]/div[3]/div[2])
-            driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[3]/div[2]').click()
-            pyautogui.hotkey('ctrl', 'v')
-            pyautogui.moveTo(300, 400)
-            time.sleep(delaytime)
+    # 아이디
+    time.sleep(delaytime)
+    driver.find_element(By.NAME, 'user_id').send_keys(id)
 
-            # HTML으로 쓰기 방식 변경
-            print('HTML 글쓰기 방식 변경...')
-            driver.find_element(By.XPATH, '//*[@id="chk_html"]').click()
-            pyautogui.moveTo(500, 600)
+    # 패스워드
+    time.sleep(delaytime)
+    driver.find_element(By.NAME, 'pw').send_keys(pw)
 
-            #본문 입력
-            print('본문 입력중...')
+    # 로그인
+    time.sleep(delaytime)
+    driver.find_element(By.ID, 'login_ok').click()
+    time.sleep(delaytime)
 
-            # 라즈베리파이 전용
-            # for i in content :
-            #     i = i.strip()
-            #     if i.find('/') != -1 :
-            #         driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[3]/textarea').send_keys(Keys.ALT + i)
-            #     else :
-            #         driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[3]/textarea').send_keys(i)
-            
-            driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[3]/textarea').send_keys(content)
+    #접속되었는지 닉네임 확인
+    name = driver.find_element(By.XPATH, '//*[@id="login_box"]/div[1]/div[1]/div[1]/a/strong')
+    print(name.text)
+    driver.implicitly_wait(10)
 
-            # 다시 바깥 창 선택.
-            driver.switch_to.default_content()
-            
-            # 모든 값 입력 이후 다시 chk_html을 해제 (생략할 경우 글쓰기 버튼 미활성)
-            driver.find_element(By.XPATH, '//*[@id="chk_html"]').click()
-            pyautogui.moveTo(700, 800)
+    # 글을 쓰고자 하는 갤러리로 이동
+    print('갤러리 글쓰기 페이지 접속...')
+    driver.get(gall)
+    time.sleep(delaytime)
 
-            #글쓰기 저장
-            print('저장 후 전송중...')
+    # 제목 입력
+    print('글 제목 입력중...')
+    driver.find_element(By.NAME, 'subject').send_keys(title)
+    pyautogui.moveTo(100, 200)
+    time.sleep(delaytime)
 
-            # 해당 요소를 찾아 자동스크롤 및 마우스 이동, 글쓰기 클릭
-            element = driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]')
-            driver.execute_script("arguments[0].scrollIntoView();", element)
-            driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').click()
-            time.sleep(delaytime)
+    # HTML으로 쓰기 방식 변경
+    print('HTML 글쓰기 방식 변경...')
+    driver.implicitly_wait(10)
+    driver.find_element(By.ID, 'chk_html').send_keys(Keys.ENTER)
+    pyautogui.moveTo(400, 300)
+    time.sleep(delaytime)
 
-            # 목차로 되돌아가여 확인
-            temper = driver.current_url
-            print('마지막 페이지 : ' + temper)
+    # 글쓰기 폼으로 진입
+    print('글쓰기 폼으로 프레임 전환...')
+    driver.switch_to.frame(driver.find_element(By.XPATH, "//iframe[@name='tx_canvas_wysiwyg']"))
+    pyautogui.moveTo(500, 600)
+    time.sleep(delaytime)
 
-            #웹페이지 닫기
-            time.sleep(delaytime)
-            print('작업 마무리중...')
-            break
-        except : 
-            continue
-        finally :
-            driver.quit()
+    #본문 입력
+    print('본문 입력중...')
+    #driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ALT + content)
+    for i in content :
+        i = i.strip()
+        if i.find('/') != -1 :
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ALT + i)
+        else :
+            driver.find_element(By.TAG_NAME, 'body').send_keys(i)
+    time.sleep(delaytime)
+
+    # 다시 바깥 창 선택.
+    driver.switch_to.default_content()
+    
+    driver.find_element(By.ID, 'chk_html').send_keys(Keys.ENTER)
+    # 모든 값 입력 이후 다시 chk_html을 해제한다. (아니면 등록 안됨...)
+    time.sleep(delaytime)
+    
+    # 글쓰기 폼으로 다시 프레임 전환
+    print('글쓰기 폼으로 프레임 재전환...')
+    driver.switch_to.frame(driver.find_element(By.XPATH, "//iframe[@name='tx_canvas_wysiwyg']"))
+    pyautogui.moveTo(100, 200)
+    time.sleep(delaytime)
+
+    # 사진에 방해되지 않게 줄을 처음으로 옮긴 후 다시 페이지 선택
+    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.CONTROL + Keys.HOME)
+    driver.switch_to.default_content()
+    time.sleep(delaytime)
+
+    # 사진 칸 클릭
+    print('사진 첨부 중...')
+    driver.find_element(By.XPATH, '//a[@title="사진"]').send_keys(Keys.ENTER)
+    time.sleep(delaytime)
+
+    # 사진 올리는 팝업창으로 이동
+    main = driver.window_handles
+    driver.switch_to.window(main[1])
+    time.sleep(delaytime)
+
+    # 현재 위치 경로 받아오기
+    working_directory = os.getcwd()
+
+    # 팝업창에서 사진 올리기 클릭 후 그 사진 선택
+    uploader = driver.find_element(By.XPATH, '//input[@type="file"]')
+    uploader.send_keys( working_directory + '//title.png' )
+    time.sleep(delaytime)
+
+    # 사진 업로드 후 다시 메인 페이지로 복귀
+    # 사진 올리는 예제 : https://uipath.tistory.com/197
+    driver.find_element(By.XPATH, '//button[@class="btn_apply"]').send_keys(Keys.ENTER)
+    time.sleep(delaytime)
+    driver.switch_to.window(main[0])
+    pyautogui.moveTo(600, 600)
+    time.sleep(delaytime)
+
+    #글쓰기 저장
+    print('저장 후 전송중...')
+    #driver.execute_script("window.scrollTo(0, 1000)")
+
+    # 해당 요소를 찾아 자동스크롤 및 마우스 이동, 글쓰기 클릭
+    element = driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]')
+    driver.execute_script("arguments[0].scrollIntoView();", element)
+    #pyautogui.moveTo(xbutton, ybutton)
+    time.sleep(delaytime)
+    #pyautogui.leftClick()
+    #driver.switch_to.default_content()
+    #driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
+    driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').click();
+    time.sleep(delaytime)
+
+    """
+    try :
+        solver = RecaptchaSolver(driver=driver)
+        recaptcha_div = driver.find_element(By.XPATH, '//*[@id="captcha_wrapper"]/div/div/iframe')
+        solver.click_recaptcha_v2(iframe=recaptcha_div)
+        time.sleep(delaytime)
+        driver.switch_to.default_content()
+        driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
+    except :
+        print("리캡차가 존재하지 않습니다.")
+    # 리캡차 확인 (상위 버전의 리캡처면 작동 안될 가능성이 높음)
+
+    try :
+        result = driver.switch_to_alert()
+        print(result.text)
+        result.accept()
+        result.dismiss()
+        time.sleep(30)
+        driver.switch_to.default_content()
+        driver.find_element(By.XPATH, '//button[@class="btn_blue btn_svc write"]').send_keys(Keys.ENTER)
+    except :
+        print("경고창이 존재하지 않습니다.")
+    # 경고창 확인(매크로 한번 탐지되면 계속 듬)
+    
+    """
+
+    #글 작성이 완료되었는지 확인하기 위해 목차로 되돌아감
+    temper = driver.current_url
+    print('마지막 페이지 : ' + temper)
+
+    #웹페이지 닫기
+    print('작업 마무리중...')
+    time.sleep(delaytime)
+    driver.quit()
+
+    #display.sendstop()
+    #display.stop()

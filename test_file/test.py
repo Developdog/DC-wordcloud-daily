@@ -1,4 +1,98 @@
+import requests
+# import base64
+# import json
+from PIL import Image
+from io import BytesIO
+import win32clipboard
+from selenium import webdriver
+import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+import pyautogui
+import requests
+
+# driver = webdriver.Chrome()
+# driver.get('https://gall.dcinside.com/mgallery/board/write/?id=XXX')
 # 단어 값 정렬 및 순서 정렬
+
+# for i in range(3):
+#     try:
+#         print(f"TRY 블록 실행 (i={i})")
+#         if i == 1:
+#             raise ValueError("예외 발생!")  # 강제로 예외 발생
+
+#     except ValueError as e:
+#         print(f"EXCEPT 블록 실행 (i={i}): {e}")
+#         continue  # 반복문 계속 진행 (현재 루프 스킵)
+
+#     finally:
+#         print(f"FINALLY 블록 실행 (i={i})")  # 항상 실행됨
+
+# content = []
+# file = open('page.txt', 'r', encoding="utf8")
+# content = file.readlines()
+
+# print('HTML 글쓰기 방식 변경...')
+# driver.find_element(By.XPATH, '//*[@id="chk_html"]').click()
+# pyautogui.moveTo(400, 300)
+# time.sleep(5)
+
+# driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[3]/textarea').send_keys(content)
+# time.sleep(20)
+
+    # 제목 입력
+
+# print('글 제목 입력중...')
+# driver.find_element(By.XPATH, '//*[@id="subject"]').send_keys('hi~~')
+
+# driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[4]/div[2]').click()
+# print('창 선택 완료...')
+# time.sleep(5)
+# pyautogui.hotkey('ctrl', 'v')
+# time.sleep(10)
+
+# # requests 라이브러리에서 기본으로 사용하는 User-Agent 문자열을 출력
+# default_ua = requests.utils.default_user_agent()
+# print("Default User-Agent:", default_ua)
+
+# headers = {
+#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+#                   "AppleWebKit/537.36 (KHTML, like Gecko) "
+#                   "Chrome/115.0.0.0 Safari/537.36"
+# }
+
+# r = requests.get('https://gall.dcinside.com/mgallery/board/lists/?id=XXX', headers=headers).text
+# print(r)
+
+# image = Image.open("C:\\Users\\user\\Desktop\\Python\\DC-wordcloud-daily\\title.png")
+
+# # 이미지 데이터를 BMP 형식으로 변환
+# output = BytesIO()
+# image.convert("RGB").save(output, "BMP")
+# bmp_data = output.getvalue()[14:]  # BMP 헤더 제거
+# output.close()
+
+# # 클립보드에 이미지 복사
+# win32clipboard.OpenClipboard()
+# win32clipboard.EmptyClipboard()
+# win32clipboard.SetClipboardData(win32clipboard.CF_DIB, bmp_data)
+# win32clipboard.CloseClipboard()
+
+# # 단어 값 정렬 및 순서 정렬
+
+# driver = webdriver.Chrome()
+# driver.get("https://www.editpad.org/")
+# driver.find_element(By.XPATH, '//*[@id="contentSec"]/button/img').click()
+# time.sleep(5)
+# driver.find_element(By.XPATH, '//*[@id="textform"]/div/div[5]/label/span').click()
+# time.sleep(5)
+# driver.find_element(By.XPATH, '//*[@id="editorTextarea"]/div[2]/div[2]').click()
+# time.sleep(5)
+# driver.find_element(By.XPATH, '//*[@id="editorTextarea"]/div[2]/div[2]').send_keys(Keys.CONTROL + 'v')
+# time.sleep(5)
+
+
 
 """
 import os
@@ -8,6 +102,7 @@ filename = "yesterday_order.txt"
 # 전날 단어 기록장
 yesterday = ["가재", "우럭", "전복", "해삼", "말미잘", "멍게"]
 today = ["우럭", "가재", "해삼", "말미잘", "전복", "멍게"]
+
 
 contents = []
 # 전날 받아온 단어 배열
@@ -154,4 +249,35 @@ fontpath = 'Ramche.ttf'
 tdata = '아시오? 나는 유쾌하오. 이런 때 연애까지가 유쾌하오. 육신이 흐느적흐느적하도록 피로했을 때만 정신이 은화처럼 맑소. 니코틴이 내 횟배 앓는 뱃속으로 스미면'
 wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, prefer_horizontal=1,).generate(tdata)
 wc_title.to_file('testtitle.png')
+"""
+
+"""
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+# Headless 모드를 사용하기 위해 Xvfb 실행 (리눅스 전용)
+#from pyvirtualdisplay import Display
+#display = Display(visible=0, size=(1920, 1080))
+#display.start()
+
+# Chrome WebDriver 옵션 설정
+options = Options()
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+
+# Chrome WebDriver 실행
+driver = webdriver.Chrome(options=options)
+
+# User-Agent 가져오기
+driver.get("https://www.example.com")
+user_agent = driver.execute_script("return navigator.userAgent;")
+print(user_agent)
+
+# WebDriver 종료
+driver.quit()
+
+# Xvfb 종료 (리눅스 전용)
+#display.stop()
+
 """
