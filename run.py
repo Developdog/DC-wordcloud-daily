@@ -206,9 +206,9 @@ while not taskdone and trial < trialend:
                             reupload_num += 1
                         
                 if not titleok:
-                    print('게시글 크롤링 실패. 15초 후 다시 시도해 봅니다.')
+                    print('게시글 크롤링 실패.',delaytime,'초 후 다시 시도해 봅니다.')
                     i -= 1
-                    time.sleep(5)
+                    time.sleep(delaytime)
 
         taskdone = True
 
@@ -227,23 +227,22 @@ while not taskdone and trial < trialend:
 
 print('워드클라우드 생성 중... [1/2]')
 ran = random.randrange(0,3)
-icon = Image.open("cover" + str(ran) + ".png").convert("RGBA")
+icon = Image.open("cover" + str(ran) + ".png")
 # 마스크가 될 이미지 불러오기
 
-mask = Image.new("RGBA", icon.size, (255, 255, 255, 1))
-x, y = icon.size
-mask.paste(icon, (0, 0, x, y), icon)
+mask = Image.new("RGB", icon.size, (255,255,255))
+mask.paste(icon, icon)
 mask = np.array(mask)
-# 빈 검은색 이미지를 생성해서 해당 파일을 원본 파일에 붙어넣어 마스크 이미지를 만듭니다.
+# 마스크 이미지를 만듭니다.
 
 wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, stopwords=stopwords, prefer_horizontal=1,
                      mask=mask).generate(tdata)
 # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
 # font_path 글꼴 기록, stopwords 글꼴 제거, prefer_horizontal 0은 수직, 1은 수평, 없앨 경우 랜덤
 
-# 배경과 같은 색 입히기
 image_colors = ImageColorGenerator(mask)
-plt.imshow(wc_title.recolor(color_func=image_colors), interpolation="bilinear")
+image_colors.default_color = [0.6,0.6,0.6] # any value for RGB
+wc_recolored = wc_title.recolor(color_func=image_colors)
 
 print('이미지 저장 중...')
 wc_title.to_file('title.png')
@@ -398,7 +397,9 @@ if taskdone:
         try :
             from selenium import webdriver
             from selenium.webdriver.common.by import By
+            from selenium.webdriver.common.keys import Keys
             from selenium.webdriver.chrome.options import Options
+            from selenium.webdriver.common.action_chains import ActionChains
 
             # 디시인사이드 자료
             url = 'https://www.dcinside.com/'
@@ -424,6 +425,8 @@ if taskdone:
             driver = webdriver.Chrome(options=options)
             # 시스템에 이미 설치된 기본 ChromeDriver를 사용.
 
+            action = ActionChains(driver)
+
             # 디시인사이드 로그인 페이지 로드
             print('dcinside 로그인 작업 중...')
             driver.get(url)
@@ -443,11 +446,12 @@ if taskdone:
             # 제목 입력
             print('글 제목 입력중...')
             driver.find_element(By.XPATH, '//*[@id="subject"]').send_keys(title)
+            time.sleep(delaytime)
             pyautogui.moveTo(100, 200)
 
             # 이미지 복사하기
             print('이미지 복사 중...')
-            image = Image.open("C:\\Users\\user\\Desktop\\Python\\DC-wordcloud-daily\\title.png")
+            image = Image.open("./title.png") # 수정
             
             # 이미지 데이터를 BMP 형식으로 변환
             output = BytesIO()
@@ -463,8 +467,12 @@ if taskdone:
             print('이미지 복사 완료...')
 
             # 글쓰기 창 선택 (말머리 유무 확인 //*[@id="write"]/div[4]/div[3]/div[2])
-            driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[3]/div[2]').click()
-            pyautogui.hotkey('ctrl', 'v')
+            #driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[4]/div[2]').click()
+            driver.find_element(By.CLASS_NAME, 'note-editable').click()
+            time.sleep(delaytime)
+            
+            # pyautogui.hotkey('ctrl', 'v')
+            action.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
             pyautogui.moveTo(300, 400)
             time.sleep(delaytime)
 
@@ -483,8 +491,8 @@ if taskdone:
             #         driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[3]/textarea').send_keys(Keys.ALT + i)
             #     else :
             #         driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[3]/textarea').send_keys(i)
-            
             driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[3]/textarea').send_keys(content)
+            time.sleep(delaytime)
 
             # 다시 바깥 창 선택.
             driver.switch_to.default_content()
@@ -492,6 +500,7 @@ if taskdone:
             # 모든 값 입력 이후 다시 chk_html을 해제 (생략할 경우 글쓰기 버튼 미활성)
             driver.find_element(By.XPATH, '//*[@id="chk_html"]').click()
             pyautogui.moveTo(700, 800)
+
 
             #글쓰기 저장
             print('저장 후 전송중...')
@@ -510,7 +519,8 @@ if taskdone:
             time.sleep(delaytime)
             print('작업 마무리중...')
             break
-        except : 
+        except Exception as e : 
+            print(e)
             continue
         finally :
             driver.quit()

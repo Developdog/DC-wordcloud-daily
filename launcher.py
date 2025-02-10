@@ -2,7 +2,7 @@ import time, os
 from datetime import datetime
 
 # 대기 시간 : 초 기준
-waittime = 120
+waittime = 300
 
 # 날짜 파일이 없을 경우 새로 생성
 if not os.path.isfile('lastupd.txt'): open('lastupd.txt', 'w').write(datetime.now().strftime('%Y-%m-%d'))
