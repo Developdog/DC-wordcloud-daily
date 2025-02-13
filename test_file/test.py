@@ -8,12 +8,42 @@ from selenium import webdriver
 import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 import pyautogui
 import requests
+import traceback
+
+try :
+    raise ValueError("this is error")
+except Exception as e :
+    print(e)
+    f = open('Errorlog.txt', 'a+', encoding='utf-8')
+    f.write('\n\n' + str(e) + '\n' + str(traceback.format_exc()))
+    f.closed
+
 
 # driver = webdriver.Chrome()
-# driver.get('https://gall.dcinside.com/mgallery/board/write/?id=XXX')
+# driver.get('https://gall.dcinside.com/mgallery/board/write/?id=guardiantales')
+
+# action = ActionChains(driver)
+
+# print('글 제목 입력중...')
+# driver.find_element(By.XPATH, '//*[@id="subject"]').send_keys('hi~~')
+# time.sleep(5)
+
+# driver.find_element(By.CLASS_NAME, 'note-editable').click()
+# # element = driver.find_element(By.XPATH, '//*[@id="write"]/div[4]/div[3]/div[2]/p[1]/img') 
+# # if element : 
+# #     print("있습니다.")  
+# # else : 
+# #     pyautogui.hotkey('ctrl', 'v')
+# #     print("없습니다.") 
+# # pyautogui.moveTo(300, 400)
+# # print('창 선택 완료...')
+# action.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+# time.sleep(5)
+
 # 단어 값 정렬 및 순서 정렬
 
 # for i in range(3):
@@ -43,12 +73,6 @@ import requests
 
     # 제목 입력
 
-# print('글 제목 입력중...')
-# driver.find_element(By.XPATH, '//*[@id="subject"]').send_keys('hi~~')
-
-# driver.find_element(By.XPATH, '//*[@id="write"]/div[3]/div[4]/div[2]').click()
-# print('창 선택 완료...')
-# time.sleep(5)
 # pyautogui.hotkey('ctrl', 'v')
 # time.sleep(10)
 
@@ -243,13 +267,39 @@ print(pyautogui.size())
 print(postion)
 """
 
-"""
-from wordcloud import WordCloud
-fontpath = 'Ramche.ttf'
-tdata = '아시오? 나는 유쾌하오. 이런 때 연애까지가 유쾌하오. 육신이 흐느적흐느적하도록 피로했을 때만 정신이 은화처럼 맑소. 니코틴이 내 횟배 앓는 뱃속으로 스미면'
-wc_title = WordCloud(font_path=fontpath, background_color='black', collocations=False, prefer_horizontal=1,).generate(tdata)
-wc_title.to_file('testtitle.png')
-"""
+
+# 워드클라우드 블로그
+# from wordcloud import WordCloud
+# import matplotlib.pyplot as plt
+# from PIL import Image
+# import numpy as np
+# from wordcloud import ImageColorGenerator
+
+# tdata = ''
+
+# filename = './lastorder/2025-02-08 00-00-00 ~ 2025-02-09 00-00-00 last_order.txt'
+# with open(filename, 'r', encoding="utf-8") as file:
+#         for line in file:
+#             tdata += (line.strip()) + ' '
+
+# icon = Image.open('./cover0.png')
+# mask = Image.new("RGB", icon.size, (255,255,255))
+# mask.paste(icon, icon)
+# mask=np.array(mask)
+
+# # stopwords=stopwords
+# # font_path=fontpath,
+# wc_title = WordCloud(background_color='black', collocations=False, prefer_horizontal=1,
+#                      mask=mask).generate(tdata)
+# # 워드클라우드 폰트와 크기에 맞춰서 생성합니다.
+# # font_path 글꼴 기록, stopwords 글꼴 제거, prefer_horizontal 0은 수직, 1은 수평, 없앨 경우 랜덤
+
+# image_colors = ImageColorGenerator(mask)
+# image_colors.default_color = [0.6,0.6,0.6] # any value for RGB
+# wc_recolored = wc_title.recolor(color_func=image_colors)
+
+# wc_title.to_file('test_title.png')
+
 
 """
 

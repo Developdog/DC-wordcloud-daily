@@ -32,6 +32,8 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 # 단어 구름 사용 라이브러리
 import pyautogui
 # 마우스 이동 라이브러리
+import traceback
+# 오류 로그 출력 라이브러리
 
 # ============================일반 변수============================
 
@@ -521,6 +523,9 @@ if taskdone:
             break
         except Exception as e : 
             print(e)
+            ff = open('Errorlog.txt', 'a+', encoding='utf-8')
+            ff.write('\n\n' + str(e) + '\n' + str(traceback.format_exc()))
+            ff.closed
             continue
         finally :
             driver.quit()
