@@ -524,7 +524,7 @@ if taskdone:
         except Exception as e : 
             print(e)
             ff = open('Errorlog.txt', 'a+', encoding='utf-8')
-            ff.write('\n\n' + str(e) + '\n' + str(traceback.format_exc()))
+            ff.write('\n\n' + str(time.localtime()) + '\n' + str(e) + '\n' + str(traceback.format_exc()))
             ff.closed
             continue
         finally :
