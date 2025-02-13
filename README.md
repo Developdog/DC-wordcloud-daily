@@ -6,7 +6,7 @@ pdjedv 님의 워드클라우드 봇 프로젝트를 참고했습니다.
 파이썬 환경은 3.10.4를 사용하고 있습니다.
 
 ## 설치 라이브러리
-' pip install shutil matplotlib beautifulsoup4 requests lxml wordcloud numpy scipy pillow pyautogui selenium pywin32 '
+`pip install shutil matplotlib beautifulsoup4 requests lxml wordcloud numpy scipy pillow pyautogui selenium pywin32`
 
 ## 실행 방법
   1. variable.txt를 생성하여 ID, PW, 주소창의 갤러리 ID를 입력해줍니다.
